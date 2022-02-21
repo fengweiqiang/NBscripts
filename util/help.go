@@ -4,6 +4,8 @@ import "github.com/go-vgo/robotgo"
 
 var Width,Height int
 
+const ICON_WIDTH = 30
+
 func GetResolvingPower() {
 	// 获取屏幕分辨率
 	width, height := robotgo.GetScreenSize()

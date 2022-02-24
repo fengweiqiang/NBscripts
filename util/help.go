@@ -15,6 +15,7 @@ const (
 	//任务栏高度
 	WINDOWS_TASKBAR   = 50
 	PC_DNGJ_FILE_NAME = "images/dngj.png"
+	PC_ZN_FILE_NAME   = "images/zm.png"
 )
 
 func init() {

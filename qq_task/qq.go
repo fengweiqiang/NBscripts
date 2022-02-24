@@ -1,6 +1,7 @@
 package qq_task
 
 import (
+	"fmt"
 	"github.com/deluan/lookup"
 	"github.com/fengweiqiang/NBscripts/util"
 	"github.com/go-vgo/robotgo"
@@ -34,74 +35,63 @@ func PcQqDailyAttendance() {
 
 //QQ腾讯管家打卡  获取不到窗口！！！
 func PcQqTXGJDailyAttendance() {
+	log.Println(robotgo.GetMainDPI(),robotgo.GetHWND(),robotgo.GetPID())
+	//mdpi :=robotgo.GetMainDPI()
+	mpid := robotgo.GetPID()
+
 	ids, err := robotgo.FindIds("QQPCTray")
 	if err != nil {
 		println(err)
 		return
 	}
 	if len(ids) == 0 {
-		println("没有检测到QQ电脑管家")
+		println("没有检测到QQ电脑管家进程")
 		return
 	}
-	//mainPId := ids[0]
-	bit := robotgo.CaptureScreen(0, util.Height-util.WINDOWS_TASKBAR, util.Width, util.WINDOWS_TASKBAR)
+	log.Println(ids)
+	robotgo.MoveClick(util.Width,util.Height)
+	log.Println(robotgo.GetMainDPI(),robotgo.GetHWND(),robotgo.GetHandle())
+
+
+	bit := robotgo.CaptureScreen(0, 0, util.Width/2, util.Height-util.WINDOWS_TASKBAR)
 	defer robotgo.FreeBitmap(bit)
 	robotgo.SaveBitmap(bit, util.PC_DNGJ_FILE_NAME)
 
-	image, err := util.LoadImage(util.PC_DNGJ_FILE_NAME)
-	if err != nil {
-		return
-	}
-	lookImage := lookup.NewLookup(image)
-	dngj_ioc, err := util.LoadImage("images/dngj_ico.png")
-	if err != nil {
-		println(err)
-		return
-	}
+	// Load full image
+	img,_ := util.LoadImage(util.PC_DNGJ_FILE_NAME)
 
-	pp, err := lookImage.FindAll(dngj_ioc, 0.9)
-	if err != nil {
-		println(err)
-		return
-	}
+	// Create a lookup for that image
+	l := lookup.NewLookup(img)
+
+	// Load a template to search inside the image
+	template,_ := util.LoadImage("images/dngj_font.png")
+
+	// Find all occurrences of the template in the image
+	pp, _ := l.FindAll(template, 0.9)
+
 	// Print the results
 	if len(pp) > 0 {
-		//log.Printf("Found %d matches:\n", len(pp))
+		//fmt.Printf("Found %d matches:\n", len(pp))
 		for _, p := range pp {
-			//log.Printf("- (%d, %d) with %f accuracy\n", p.X, p.Y, p.G)
-			robotgo.Move(p.X+15, util.Height-p.Y)
+			fmt.Printf("- (%d, %d) with %f accuracy\n", p.X, p.Y, p.G)
+			//启动页面
+			robotgo.MoveClick(p.X, p.Y,"left",true)
+			//dngjPid := robotgo.GetPID()
+			//dngj := robotgo.GetHWND()
+			//切换移动鼠标
+			robotgo.ActivePID(mpid)
+			robotgo.MoveSmooth(util.Width/2-380, util.Height/2-230)
 
+
+			//log.Println(robotgo.ActivePID(dngjPid))
+			//robotgo.SetHandle(int(dngj))
+			//log.Println(robotgo.SetActiveWindow(dngj))
+			//log.Println(robotgo.ActiveName("电脑管家"))
+			//log.Println("移动后:",robotgo.GetMainDPI(),robotgo.GetHWND(),robotgo.GetPID())
+			robotgo.Click("left")
+			log.Println("点击签到后:",robotgo.GetMainDPI(),robotgo.GetHWND(),robotgo.GetPID())
 			robotgo.Click("left")
 
-			//ids, err := robotgo.FindIds("QQPCTray")
-			//if err != nil {
-			//	println(err)
-			//	return
-			//}
-			//for _, v := range ids {
-			//	if mainPId == v {
-			//		continue
-			//	}
-			//	err := robotgo.ActivePID(v)
-			//	if err != nil {
-			//		println(err)
-			//		continue
-			//	}
-
-				x, y := robotgo.GetMousePos()
-				log.Println(x,y)
-
-				robotgo.MoveSmooth(util.Width/2-380, util.Height/2-230)
-
-				x, y = robotgo.GetMousePos()
-				log.Println(x,y)
-
-				robotgo.Click("left", true)
-
-				robotgo.Click()
-				println("点击头像完成")
-			//
-			//}
 		}
 	} else {
 		println("No matches found")

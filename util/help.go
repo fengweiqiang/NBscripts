@@ -66,6 +66,12 @@ const (
 )
 
 //get system dpi
+func GetDpi() float64 {
+	return float64(win.GetDpiForWindow(win.GetForegroundWindow())) / 96
+}
+
+//get system dpi
+//Deprecated: Use GetDpi instead.
 func GetDpiForSystem() (horzScalestr, vertScalestr float64) {
 	// 获取窗口当前显示的监视器
 	hWnd := win.MonitorFromWindow(win.GetConsoleWindow(), win.MONITOR_DEFAULTTONEAREST)
